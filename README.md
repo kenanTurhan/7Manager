@@ -9,9 +9,7 @@ API backend de 7Manager, construite avec [FastAPI](https://fastapi.tiangolo.com/
 - **Pydantic** — validation des données
 - **Uvicorn** — serveur ASGI
 
-## Objectif du projet
-Le but de ce projet est double. Il permet d'abord aux équipes de football à 7 de gérer leurs équipes, leurs matchs et tout ce qui gravite autour.
-Il sert également de portfolio et démontre mes compétences techniques.## Structure du projet
+## Structure du projet
 
 ```
 7manager/
