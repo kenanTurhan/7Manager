@@ -61,16 +61,26 @@ def retirer_poste(poste:modeles.retirerPoste, claims=Depends(utilisateur_courant
 
 
 @router.patch("/actualiser_poste")
-def actualiser_poste(data:modeles.modifierPoste):
-    try:
-        resultat = service.func_actualiser_poste(data.poste, data.nouveauPoste)
-        if isinstance(resultat, dict) and "error" in resultat:
-            raise HTTPException(status_code=500, detail=resultat["error"])
-        if not resultat:
-            raise HTTPException(status_code=404, detail=f"poste {data.poste} non trouvé")
-        return {"message": f"poste {data.poste} actualisé"}      
-    except HTTPException:
-        raise
-    except Exception as e:  
-        raise HTTPException(status_code=500, detail=str(e))
+def actualiser_poste(data:modeles.modifierPoste, claims = Depends(utilisateur_courant)):
+    id = claims.get("sub")
+    response = (
+        supabase.table("utilisateur")
+        .select("admin")
+        .eq("id", id)
+        .execute()
+    )
+    if not response.data or not response.data[0]["admin"]:
+        raise HTTPException(status_code=403, detail="Cette action est réservée aux administrateurs")
+    else:
+        try:
+            resultat = service.func_actualiser_poste(data.poste, data.nouveauPoste)
+            if isinstance(resultat, dict) and "error" in resultat:
+                raise HTTPException(status_code=500, detail=resultat["error"])
+            if not resultat:
+                raise HTTPException(status_code=404, detail=f"poste {data.poste} non trouvé")
+            return {"message": f"poste {data.poste} actualisé"}      
+        except HTTPException:
+            raise
+        except Exception as e:  
+            raise HTTPException(status_code=500, detail=str(e))
 

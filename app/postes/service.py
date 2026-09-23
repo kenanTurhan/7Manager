@@ -16,7 +16,7 @@ def func_retirer_poste(poste:str):
 
 def func_actualiser_poste(poste:str, nouveauPoste:str):
     try:
-        reponse = supabase.table("poste").update({"poste":nouveauPoste}).eq("poste",poste).execute()
+        reponse = supabase.table("poste").update({"poste":nouveauPoste}).eq("uuid",poste).execute()
         return list(reponse.data)
     except Exception as e:
         return {"error": str(e)}
