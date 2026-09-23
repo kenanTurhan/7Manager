@@ -33,19 +33,31 @@ def ajouter_poste(poste: modeles.ajouterPoste, claims=Depends(utilisateur_couran
     return response.data[0]["admin"]    
 
 @router.delete("/retirer_poste")
-def retirer_poste(poste:modeles.retirerPoste):
-    try:
-        resultat = service.func_retirer_poste(poste.poste)
-        if isinstance(resultat, dict) and "error" in resultat:
-            raise HTTPException(status_code=500, detail=resultat["error"])
-        if not resultat:
-            raise HTTPException(status_code=404, detail=f"poste {poste.poste} non trouvé")
-        return {"message": f"poste {poste.poste} retirer"}
-        
-    except HTTPException:
-        raise
-    except Exception as e:  
-        raise HTTPException(status_code=500, detail=str(e))
+def retirer_poste(poste:modeles.retirerPoste, claims=Depends(utilisateur_courant)):
+    id = claims.get("sub")
+    response = (
+        supabase.table("utilisateur")
+        .select("admin")
+        .eq("id", id)
+        .execute()
+    )
+
+    if not response.data or not response.data[0]["admin"]:
+        raise HTTPException(status_code=403, detail="Cette action est réservée aux administrateurs")
+    else:
+
+        try:
+            resultat = service.func_retirer_poste(poste.poste)
+            if isinstance(resultat, dict) and "error" in resultat:
+                raise HTTPException(status_code=500, detail=resultat["error"])
+            if not resultat:
+                raise HTTPException(status_code=404, detail=f"poste {poste.poste} non trouvé")
+            return {"message": f"poste {poste.poste} retirer"}
+            
+        except HTTPException:
+            raise
+        except Exception as e:  
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.patch("/actualiser_poste")

@@ -9,7 +9,7 @@ def func_ajouter_poste(poste:str):
 
 def func_retirer_poste(poste:str):
     try:
-        reponse = supabase.table("poste").delete().eq("poste",poste).execute()
+        reponse = supabase.table("poste").delete().eq("uuid",poste).execute()
         return reponse.data
     except Exception as e:
         return {"error": str(e)}
