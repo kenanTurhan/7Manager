@@ -7,4 +7,5 @@ class creerEquipe(BaseModel):
     couleur2: str
     urlImage: str
     codePostal: str
+    division: str
 

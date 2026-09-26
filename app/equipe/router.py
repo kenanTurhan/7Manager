@@ -10,6 +10,10 @@ router = APIRouter(prefix= "/equipe", tags=["equipe"])
 @router.post("/creer_equipe")
 def creer_equipe(equipe: modeles.creerEquipe, claims=Depends(utilisateur_courant)):
     # Crée l'équipe
-    idClub = service.creerEquipe(claims, equipe.nom, equipe.description, equipe.couleur1, equipe.couleur2, equipe.urlImage, equipe.codePostal)
+    idClub = service.creerEquipe(claims, equipe.nom, equipe.description, equipe.couleur1, equipe.couleur2, equipe.urlImage, equipe.codePostal, equipe.division)
     # Ajoute le créateur dans le club via la table appartenirClub, en temps qu'admin et capitaine
     return service.ajouterJoueurClubCreation(claims, idClub)
+
+@router.get("/membre")
+def getMembre(idEquipe):
+    return service.listeJoueurEquipe(idEquipe)

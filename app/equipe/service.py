@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from postgrest.exceptions import APIError
 
 
-def creerEquipe(claims, nom, description, couleur1, couleur2, urlImage, codePostal):
+def creerEquipe(claims, nom, description, couleur1, couleur2, urlImage, codePostal, division):
     id = claims.get("sub")
     user = supabase.table("utilisateur").select("*").eq("id", id).execute()
     if not user.data:
@@ -13,7 +13,7 @@ def creerEquipe(claims, nom, description, couleur1, couleur2, urlImage, codePost
     else:
         response = (
             supabase.table("club")
-            .insert({"nom": nom, "description": description, "couleur1":couleur1, "couleur2":couleur2, "urlImage": urlImage, "codePostal":codePostal})
+            .insert({"nom": nom, "description": description, "couleur1":couleur1, "couleur2":couleur2, "urlImage": urlImage, "codePostal":codePostal, "division": division})
             .execute()
             )
         return response.data[0]["id"]   
@@ -33,3 +33,9 @@ def ajouterJoueurClubCreation(claims, idClub):
         except APIError as e:
             raise HTTPException(status_code=400, detail=e.message)
 
+def listeJoueurEquipe(idEquipe):
+    try:
+        reponse = (supabase.table("appartenirEquipe").select("idJoueur").eq("idClub", idEquipe).execute())
+        return reponse
+    except APIError as e:
+        raise HTTPException(status_code=400, detail=e.message)
