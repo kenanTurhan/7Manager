@@ -23,8 +23,8 @@ def creerCodeInvitation(equipe: modeles.inviterEquipe, claims=Depends(utilisateu
     return service.inviterEquipe(claims, equipe.idEquipe)
 
 @router.post("/rejoindreEquipe")
-def rejoindreEquipe(codeInvitation: str, claims=Depends(utilisateur_courant)):
-    return service.rejoindreClub(claims, codeInvitation)
+def rejoindreEquipe(code:modeles.rejoindre, claims=Depends(utilisateur_courant)):
+    return service.rejoindreClub(claims, code.codeInvitation)
 
 @router.get("/infoEquipe")
 def getEquipe(idEquipe: str, claims=Depends(utilisateur_courant)):

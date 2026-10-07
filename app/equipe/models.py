@@ -12,3 +12,5 @@ class creerEquipe(BaseModel):
 class inviterEquipe(BaseModel):
     idEquipe: str
 
+class rejoindre(BaseModel):
+    codeInvitation: int
