@@ -71,16 +71,27 @@ def inviterEquipe(claims, idEquipe):
 
     return {"code": codeInvitation}     
 
-# def rejoindreClub(claims, codeInvitation):
-#     id = claims.get("sub")
-#     clubId = supabase.table("club").select("id").eq("codeInvitationTemporaire", codeInvitation).execute()
-#     if not clubId.data:
-#         raise HTTPException(status_code=404, detail="Invitation expirer ou innexistante")
-#     try:
-#         response = (
-#             supabase.table("appartenirEquipe")
-#             .insert({"idJoueur":id, "idClub": clubId.data[0]["id"],})
-#             .execute()
-#         )
-#     except APIError as e:
-#         raise HTTPException(status_code=400, detail=e.message)
+def rejoindreClub(claims, codeInvitation):
+    id = claims.get("sub")
+    clubId = supabase.table("club").select("id").eq("codeInvitationTemporaire", codeInvitation).execute()
+    if not clubId.data:
+        raise HTTPException(status_code=404, detail="Invitation expirer ou innexistante")
+    query = supabase.table("appartenirEquipe").select("*").eq("idJoueur", id).eq("idClub", clubId.data[0]["id"]).execute()
+    if query.data:
+        raise HTTPException(status_code=400, detail="Vous êtes déjà membre de ce club")
+    try:
+        response = (
+            supabase.table("appartenirEquipe")
+            .insert({"idJoueur":id, "idClub": clubId.data[0]["id"],"estCapitaine": False, "estAdmin": False})
+            .execute()
+        )
+    except APIError as e:
+        raise HTTPException(status_code=400, detail=e.message)
+
+def infoEquipe(idEquipe):
+    try:
+        query = supabase.table("club").select("nom", "description", "couleur1", "couleur2", "urlImage", "codePostal", "division").eq("id", idEquipe).execute()
+    except:
+        raise HTTPException(status_code=404, detail="Equipe introuvable")
+
+    return query

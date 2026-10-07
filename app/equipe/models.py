@@ -11,3 +11,4 @@ class creerEquipe(BaseModel):
 
 class inviterEquipe(BaseModel):
     idEquipe: str
+

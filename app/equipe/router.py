@@ -15,7 +15,7 @@ def creer_equipe(equipe: modeles.creerEquipe, claims=Depends(utilisateur_courant
     return service.ajouterJoueurClubCreation(claims, idClub)
 
 @router.get("/membre")
-def getMembre(idEquipe):
+def getMembre(idEquipe: int, claims=Depends(utilisateur_courant)):
     return service.listeJoueurEquipe(idEquipe)
 
 @router.post("/creerCodeInvitation")
@@ -25,3 +25,7 @@ def creerCodeInvitation(equipe: modeles.inviterEquipe, claims=Depends(utilisateu
 @router.post("/rejoindreEquipe")
 def rejoindreEquipe(codeInvitation: str, claims=Depends(utilisateur_courant)):
     return service.rejoindreClub(claims, codeInvitation)
+
+@router.get("/infoEquipe")
+def getEquipe(idEquipe: str, claims=Depends(utilisateur_courant)):
+    return service.infoEquipe(idEquipe)
