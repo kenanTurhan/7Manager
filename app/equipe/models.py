@@ -9,3 +9,5 @@ class creerEquipe(BaseModel):
     codePostal: str
     division: str
 
+class inviterEquipe(BaseModel):
+    idEquipe: str

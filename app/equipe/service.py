@@ -3,7 +3,9 @@ from app.dependance import utilisateur_courant
 from app.core.database import supabase
 from fastapi import HTTPException
 from postgrest.exceptions import APIError
+import random
 
+random.seed(1)
 
 def creerEquipe(claims, nom, description, couleur1, couleur2, urlImage, codePostal, division):
     id = claims.get("sub")
@@ -39,3 +41,46 @@ def listeJoueurEquipe(idEquipe):
         return reponse
     except APIError as e:
         raise HTTPException(status_code=400, detail=e.message)
+
+def inviterEquipe(claims, idEquipe):
+    idJoueur = claims.get("sub")
+
+    admin = (
+        supabase.table("appartenirEquipe")
+        .select("estAdmin")
+        .eq("idJoueur", idJoueur)
+        .eq("idClub", idEquipe)
+        .eq("estAdmin", True)
+        .execute()
+    )
+    if not admin.data:
+        raise HTTPException(status_code=403, detail="Cette action nécessite d'être administrateur du club")
+    try:
+        codeInvitation = random.randint(0, 9999)
+        response = supabase.table("club").update({"codeInvitationTemporaire": codeInvitation}).eq("id", idEquipe).execute()
+    except APIError as e:
+        # Erreur côté base : colonne inexistante, type invalide, droits RLS...
+        raise HTTPException(status_code=400, detail=e.message)
+    except Exception:
+        # Erreur imprévue : réseau, Supabase injoignable...
+        raise HTTPException(status_code=500, detail="Erreur serveur")
+
+    # Aucune ligne modifiée, donc le club n'existe pas
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Club introuvable")
+
+    return {"code": codeInvitation}     
+
+# def rejoindreClub(claims, codeInvitation):
+#     id = claims.get("sub")
+#     clubId = supabase.table("club").select("id").eq("codeInvitationTemporaire", codeInvitation).execute()
+#     if not clubId.data:
+#         raise HTTPException(status_code=404, detail="Invitation expirer ou innexistante")
+#     try:
+#         response = (
+#             supabase.table("appartenirEquipe")
+#             .insert({"idJoueur":id, "idClub": clubId.data[0]["id"],})
+#             .execute()
+#         )
+#     except APIError as e:
+#         raise HTTPException(status_code=400, detail=e.message)
