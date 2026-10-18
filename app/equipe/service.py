@@ -3,9 +3,8 @@ from app.dependance import utilisateur_courant
 from app.core.database import supabase
 from fastapi import HTTPException
 from postgrest.exceptions import APIError
-import random
+import secrets
 
-random.seed(1)
 
 def creerEquipe(claims, nom, description, couleur1, couleur2, urlImage, codePostal, division):
     id = claims.get("sub")
@@ -56,7 +55,7 @@ def inviterEquipe(claims, idEquipe):
     if not admin.data:
         raise HTTPException(status_code=403, detail="Cette action nécessite d'être administrateur du club")
     try:
-        codeInvitation = random.randint(0, 9999)
+        codeInvitation = secrets.randbelow(10000)
         response = supabase.table("club").update({"codeInvitationTemporaire": codeInvitation}).eq("id", idEquipe).execute()
     except APIError as e:
         # Erreur côté base : colonne inexistante, type invalide, droits RLS...
@@ -189,6 +188,42 @@ def supprimerMembre(idEquipe, idJoueur, claims):
 
     return("Le joueur à bien été supprimé de l'équipe")
 
+def capitana(idEquipe, idJoueur, claims):
+    userId = claims["sub"]
+    #vérifier que le joueur est bien l'actuel capitaine
+    capitaineActuel = supabase.table("appartenirEquipe").select("id").eq("idClub", idEquipe).eq("idJoueur", userId).eq("estCapitaine", True).execute()
+    if not capitaineActuel.data:
+        raise HTTPException(status_code=403, detail="Seul le capitaine peut transferer le role de capitaine")
+    #vérifie que le joueur à capitainer est membre du club
+    joueur = supabase.table("appartenirEquipe").select("id").eq("idClub", idEquipe).eq("idJoueur", idJoueur).execute()
+    if not joueur.data:
+        raise HTTPException(status_code=404, detail="Le joueurs à promouvoir n'existe pas")
+
+    #passer l'encien capitaine en joueur
+    supabase.table("appartenirEquipe").update({"estCapitaine": False}).eq("idClub", idEquipe).eq("idJoueur", userId).execute()
+
+    #passer le nouveau capitaine en capitaine
+    supabase.table("appartenirEquipe").update({"estCapitaine": True}).eq("idClub", idEquipe).eq("idJoueur", idJoueur).execute()
+    nom = supabase.table("utilisateur").select("nom").eq("id", idJoueur).execute()
+
+    return f"Le brassard a été transféré à {nom.data[0]['nom']}"    
 
 
+def quitterEquipe(idEquipe, claims):
+    #get id joueur
+    idJoueur = claims["sub"]
 
+    #vérifier que le joueur fait bien partie de l'équipe
+    verifEquipe = supabase.table("appartenirEquipe").select("id").eq("idClub",idEquipe).eq("idJoueur", idJoueur).execute()
+    if not verifEquipe.data:
+        raise HTTPException(status_code=403, detail="Vous ne faites pas partie de l'équipe que vous voulez quitter.")
+
+    #vérifie que l'on soit pas capitaine
+    verifCapitaine = supabase.table("appartenirEquipe").select("id").eq("idClub",idEquipe).eq("idJoueur", idJoueur).eq("estCapitaine", True).execute()
+    if verifCapitaine.data:
+        raise HTTPException(status_code=403, detail="Vous ne pouvez pas quitter l'équipe en étant capitaine, veuillez d'abord nommer un nouveau capitaine.")
+
+    #quitter
+    delete = supabase.table("appartenirEquipe").delete().eq("idClub", idEquipe).eq("idJoueur", idJoueur).execute()
+
+    return("Vous avez bien quitté l'équipe.")

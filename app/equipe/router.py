@@ -15,7 +15,7 @@ def creer_equipe(equipe: modeles.creerEquipe, claims=Depends(utilisateur_courant
     return service.ajouterJoueurClubCreation(claims, idClub)
 
 @router.get("/membre")
-def getMembre(idEquipe: int, claims=Depends(utilisateur_courant)):
+def getMembre(idEquipe: str, claims=Depends(utilisateur_courant)):
     return service.listeJoueurEquipe(idEquipe)
 
 @router.post("/creerCodeInvitation")
@@ -38,7 +38,7 @@ def mesEquipes(claims=Depends(utilisateur_courant)):
     return service.mesEquipes(claims)
 
 # Modifier une équipe (admin)
-@router.patch("modifierEquipe")
+@router.patch("/modifierEquipe")
 def modifierEquipe(idEquipe:str, modif: modeles.modifierEquipe, claims=Depends(utilisateur_courant)):
     return service.modifierEquipe(claims, modif.nom, modif.description, modif.couleur1, modif.couleur2, modif.urlImage, modif.codePostal, modif.division, idEquipe)
 # Supprimer une équipe (admin)
@@ -59,3 +59,10 @@ def promouvoirAdmin(idEquipe, idJoueur, claims=Depends(utilisateur_courant)):
 def supprimerMembre(idEquipe, idJoueur, claims=Depends(utilisateur_courant)):
     return service.supprimerMembre(idEquipe, idJoueur, claims) 
 
+@router.patch("/captana")
+def transferercapitana(idEquipe, idJoueur, claims=Depends(utilisateur_courant)):
+    return service.capitana(idEquipe, idJoueur, claims)
+
+@router.delete("/quitterEquipe")
+def quitterEquipe(idEquipe, claim=Depends(utilisateur_courant)):
+    return service.quitterEquipe(idEquipe, claim)
