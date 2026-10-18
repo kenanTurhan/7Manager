@@ -6,7 +6,7 @@ class creerEquipe(BaseModel):
     couleur1: str
     couleur2: str
     urlImage: str
-    codePostal: str
+    codePostal: int
     division: str
 
 class inviterEquipe(BaseModel):
@@ -14,3 +14,12 @@ class inviterEquipe(BaseModel):
 
 class rejoindre(BaseModel):
     codeInvitation: int
+
+class modifierEquipe(BaseModel):
+    nom: str
+    description: str
+    couleur1: str
+    couleur2: str
+    urlImage: str
+    codePostal: int
+    division: str

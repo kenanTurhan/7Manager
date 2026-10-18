@@ -29,3 +29,32 @@ def rejoindreEquipe(code:modeles.rejoindre, claims=Depends(utilisateur_courant))
 @router.get("/infoEquipe")
 def getEquipe(idEquipe: str, claims=Depends(utilisateur_courant)):
     return service.infoEquipe(idEquipe)
+
+
+# Liste de mes équipes
+
+@router.get("/mesEquipes")
+def mesEquipes(claims=Depends(utilisateur_courant)):
+    return service.mesEquipes(claims)
+
+# Modifier une équipe (admin)
+@router.patch("modifierEquipe")
+def modifierEquipe(idEquipe:str, modif: modeles.modifierEquipe, claims=Depends(utilisateur_courant)):
+    return service.modifierEquipe(claims, modif.nom, modif.description, modif.couleur1, modif.couleur2, modif.urlImage, modif.codePostal, modif.division, idEquipe)
+# Supprimer une équipe (admin)
+
+@router.delete("/supprimerEquipe")
+def supprimerEquipe(idEquipe, claim = Depends(utilisateur_courant)):
+    return service.supprimerEquipe(idEquipe, claim)
+
+
+# promouvoir admin
+@router.patch("/promouvoirAdmin")
+def promouvoirAdmin(idEquipe, idJoueur, claims=Depends(utilisateur_courant)):
+    return service.promouvoirAdmin(idEquipe, idJoueur, claims)
+
+
+
+# Retirer un membre (admin)
+# Changer le rôle d'un membre (admin / capitaine)
+# Révoquer ou régénérer un code d'invitation
