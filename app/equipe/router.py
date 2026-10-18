@@ -54,7 +54,8 @@ def promouvoirAdmin(idEquipe, idJoueur, claims=Depends(utilisateur_courant)):
     return service.promouvoirAdmin(idEquipe, idJoueur, claims)
 
 
-
 # Retirer un membre (admin)
-# Changer le rôle d'un membre (admin / capitaine)
-# Révoquer ou régénérer un code d'invitation
+@router.delete("/supprimerMembre")
+def supprimerMembre(idEquipe, idJoueur, claims=Depends(utilisateur_courant)):
+    return service.supprimerMembre(idEquipe, idJoueur, claims) 
+

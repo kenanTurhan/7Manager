@@ -103,7 +103,7 @@ def mesEquipes(claims):
         query = supabase.table("appartenirEquipe").select("idClub").eq("idJoueur", userId).execute()
         return query
     except:
-        HTTPException(status_code=404, detail="Vous devez vous connecter")
+        raise HTTPException(status_code=404, detail="Vous devez vous connecter")
 
 def modifierEquipe(claims, nom, description, couleur1, couleur2, urlImage, codePostal, division, idEquipe):
     #verifier qu'on est admin
@@ -143,25 +143,52 @@ def promouvoirAdmin(idEquipe, idJoueur, claims):
     query = supabase.table("appartenirEquipe").select("idClub").eq("idJoueur", userId).eq("idClub", idEquipe).eq("estAdmin", True).execute()
     if not query.data:
         raise HTTPException(status_code=403, detail="Cette action necessite des droit administrateurs")
-    #verifier qu'on s'auto supprime pas
+    #verifier qu'on promote supprime pas
     if userId == idJoueur:
-        raise HTTPException(status_code=403, detail="Vous ne pouvez pas vous auto supprimer. Passez par l'option 'quitter le club' ")
+        raise HTTPException(status_code=403, detail="Vous ne pouvez pas vous auto promouvoir.")
 
     #verifie que e joueur à promouvoir existe
     query = supabase.table("appartenirEquipe").select("idClub").eq("idJoueur", idJoueur).eq("idClub", idEquipe).execute()
     if not query.data:
         raise HTTPException(status_code=403, detail="Le joueur n'existe pas")
-    #verifie que le joueur à promouvoir existe
+    #verifie que le joueur à promouvoir ne soit pas déjà admin
     query = supabase.table("appartenirEquipe").select("idClub").eq("idJoueur", idJoueur).eq("idClub", idEquipe).eq("estAdmin", False).execute()
     if not query.data:
         raise HTTPException(status_code=403, detail="Le joueur est déjà admin")
 
-    promotion = supabase.table("appartenirEquipe").update({"estAdmin": True}).eq("idJoueur", idJoueur).execute()
+    supabase.table("appartenirEquipe").update({"estAdmin": True}).eq("idJoueur", idJoueur).eq("idClub", idEquipe).execute()
 
     return("Le joueur à bien été promus")
 
 
+def supprimerMembre(idEquipe, idJoueur, claims):
+    userId = claims["sub"]
+   
+    #check role admin
+    query = supabase.table("appartenirEquipe").select("idClub").eq("idJoueur", userId).eq("idClub", idEquipe).eq("estAdmin", True).execute()
+    if not query.data:
+        raise HTTPException(status_code=403, detail="Cette action necessite des droit administrateurs")
     
+    #verifier qu'on s'auto supprime pas
+    if userId == idJoueur:
+        raise HTTPException(status_code=403, detail="Vous ne pouvez pas vous auto supprimer. Passez par l'option 'quitter le club' ")
+    
+    #verifie que e joueur à supprimer existe
+    query = supabase.table("appartenirEquipe").select("idClub").eq("idJoueur", idJoueur).eq("idClub", idEquipe).execute()
+    if not query.data:
+        raise HTTPException(status_code=403, detail="Le joueur n'existe pas")
+    
+    #verifie que le joueur supprimer ne soit pas admin 
+    query = supabase.table("appartenirEquipe").select("idClub").eq("idJoueur", idJoueur).eq("idClub", idEquipe).eq("estAdmin", False).execute()
+    if not query.data:
+        capitaine = supabase.table("appartenirEquipe").select("idClub").eq("idJoueur", userId).eq("idClub", idEquipe).eq("estCapitaine", True).execute()
+        if not capitaine.data:
+            raise HTTPException(status_code=403, detail="Le joueur est admin, seul le capitaine peut le supprimer")
+
+    supabase.table("appartenirEquipe").delete().eq("idJoueur", idJoueur).eq("idClub", idEquipe).execute()
+
+    return("Le joueur à bien été supprimé de l'équipe")
+
 
 
 
