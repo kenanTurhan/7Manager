@@ -17,5 +17,8 @@ def creerMatch(recevant, visiteur, date, heure, division, stade, claim):
 
     return(f"le match opposant {recevant} à {visiteur} a bien été enregistrer")
 
+def matchDuJour(date):
+    match = supabase.table("match").select("club_recevant", "club_visiteur", "date_match", "heure_match", "stade", "match_division").eq("date_match", date).execute()
+    return match.data
 
 

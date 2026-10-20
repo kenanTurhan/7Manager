@@ -10,3 +10,7 @@ router = APIRouter(prefix= "/match", tags=["match"])
 @router.post("/creerMatch")
 def creerMatch(match: modeles.preMatch, claim=Depends(utilisateur_courant)):
     return service.creerMatch(match.recevant, match.visiteur, match.date, match.heure, match.division, match.stade, claim)
+
+@router.get("/matchDuJour")
+def matchDuJours(date: str):
+    return service.matchDuJour(date)
