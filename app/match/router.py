@@ -12,5 +12,13 @@ def creerMatch(match: modeles.preMatch, claim=Depends(utilisateur_courant)):
     return service.creerMatch(match.recevant, match.visiteur, match.date, match.heure, match.division, match.stade, claim)
 
 @router.get("/matchDuJour")
-def matchDuJours(date: str):
-    return service.matchDuJour(date)
+def matchDuJours():
+    return service.matchDuJour()
+
+@router.get("/matchParJour")
+def matchParJours(date: str):
+    return service.matchParJour(date)
+
+@router.patch("/match")
+def modifierMatch(idMatch:str, match: modeles.preMatch, claim=Depends(utilisateur_courant)):
+    return service.modifierMatch(idMatch, match.recevant, match.visiteur, match.date, match.heure, match.division, match.stade, claim)
