@@ -11,7 +11,7 @@ router = APIRouter(prefix= "/match", tags=["match"])
 def creerMatch(match: modeles.preMatch, claim=Depends(utilisateur_courant)):
     return service.creerMatch(match.recevant, match.visiteur, match.date, match.heure, match.division, match.stade, claim)
 
-@router.get("/matchDuJour")
+@router.get("/match")
 def matchDuJours():
     return service.matchDuJour()
 
