@@ -16,7 +16,7 @@ def creerMatch(recevant, visiteur, date, heure, division, stade, claim):
         raise HTTPException(status_code=403, detail="Vous devez être administrateur de l'application pour créer un match")
 
     #modifier le match
-    supabase.table("match").insert({"club_recevant": recevant, "club_visiteur":visiteur, "date_match": date.isoformat(), "heure_match":heure.isoformat(), "match_division":division, "stade":stade, "fini":False}).execute()
+    supabase.table("match").insert({"club_recevant": recevant, "club_visiteur":visiteur, "score_domicile": 0, "score_visiteur": 0,  "date_match": date.isoformat(), "heure_match":heure.isoformat(), "match_division":division, "stade":stade, "fini":False}).execute()
 
     return(f"le match opposant {recevant} à {visiteur} a bien été enregistrer")
 
@@ -49,4 +49,39 @@ def modifierMatch(idMatch, recevant, visiteur, date, heure, division, stade, cla
     return(f"le match opposant {recevant} à {visiteur} a bien été modifié")
 
 
+def faitDeJeu(matchId, equipeId, buteurId, passeurId, minute, claim):
+    #vérifier l'éxistance du match
+    match = supabase.table("match").select("club_recevant, club_visiteur, score_domicile, score_visiteur").eq("id", matchId).execute()
+    if not match.data:
+        raise HTTPException(status_code=404, detail="Match introuvable")
+    match = match.data[0]
 
+    #seul le capitaine receveur peut intéragir avec le match
+    # Seul le capitaine de l'équipe recevante peut interagir
+    userId = claim["sub"]
+    capitaine = supabase.table("appartenirEquipe").select("idJoueur").eq("idClub", match["club_recevant"]).eq("idJoueur", userId).eq("estCapitaine", True).execute()
+    if not capitaine.data:
+        raise HTTPException(status_code=403, detail="Seul le capitaine de l'équipe recevante peut ajouter des faits de jeu")
+
+    #déterminer si le but est domicil ou visiteur
+    # Choisir le champ à incrémenter
+    if equipeId == match["club_recevant"]:
+        champ = "score_domicile"
+    elif equipeId == match["club_visiteur"]:
+        champ = "score_visiteur"
+    else:
+        raise HTTPException(status_code=400, detail="Cette équipe ne joue pas ce match")
+
+    # Incrémenter le score
+    scoreActuel = supabase.table("match").select(champ).eq("id", matchId).execute()
+    print(champ)
+
+    scoreActuel = scoreActuel.data[0][champ]
+    print(scoreActuel)
+
+    supabase.table("match").update({champ: scoreActuel + 1}).eq("id", matchId).execute()
+
+    #ajouter l'action dans la table tempsFort
+    supabase.table("tempsFort").insert({"matchId": matchId, "buteur": buteurId, "passeur": passeurId, "minute": minute }).execute()
+
+    return("Le but à bien été enregistré")

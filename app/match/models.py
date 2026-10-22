@@ -11,3 +11,10 @@ class preMatch(BaseModel):
     heure:time
     division:str
     stade:str
+
+class faitDeJeu(BaseModel):
+    autheurEquipe:str
+    buteurJoueur: str
+    passeurJoueur: str
+    minute: int
+

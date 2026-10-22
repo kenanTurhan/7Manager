@@ -22,3 +22,7 @@ def matchParJours(date: str):
 @router.patch("/match")
 def modifierMatch(idMatch:str, match: modeles.preMatch, claim=Depends(utilisateur_courant)):
     return service.modifierMatch(idMatch, match.recevant, match.visiteur, match.date, match.heure, match.division, match.stade, claim)
+
+@router.patch("/faitDeJeu")
+def faitDeJeu(matchId: str, faitDeJeu :  modeles.faitDeJeu, claim = Depends(utilisateur_courant)):
+    return service.faitDeJeu(matchId, faitDeJeu.autheurEquipe, faitDeJeu.buteurJoueur, faitDeJeu.passeurJoueur, faitDeJeu.minute, claim)
